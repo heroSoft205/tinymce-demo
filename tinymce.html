@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="static/tinymce531/jquery.tinymce.min.js" type="module"></script>
+    <script src="static/tinymce531/tinymce.min.js" ></script>
+    <script src="static/tinymce531/langs/zh_CN.js"></script>
+</head>
+<body>
+<form method="post">
+    <textarea id="mytextarea">Hello, World!</textarea>
+</form>
+<script language="javascript" type="text/javascript">
+    tinymce.init({
+        selector: '#mytextarea',
+        language: 'zh_CN',
+        plugins: "code image axupimgs",
+        images_upload_handler: function (blobInfo, succFun, failFun) {
+            var xhr, formData;
+            var file = blobInfo.blob();//转化为易于理解的file对象
+            xhr = new XMLHttpRequest();
+            xhr.withCredentials = false;
+            xhr.open('POST', '/demo/upimg2.php');
+            xhr.onload = function() {
+                var json;
+                if (xhr.status != 200) {
+                    failFun('HTTP Error: ' + xhr.status);
+                    return;
+                }
+                json = JSON.parse(xhr.responseText);
+                if (!json || typeof json.location != 'string') {
+                    failFun('Invalid JSON: ' + xhr.responseText);
+                    return;
+                }
+                succFun(json.location);
+            };
+            formData = new FormData();
+            formData.append('file', file, file.name );
+            xhr.send(formData);
+        }
+    });
+</script>
+</body>
+</html>
